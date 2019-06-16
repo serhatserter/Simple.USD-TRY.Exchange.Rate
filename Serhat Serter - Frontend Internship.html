@@ -1,0 +1,143 @@
+<html>
+<head>
+
+  <!-- jquery kütüphanesi eklendi-->
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous">
+  </script>
+
+
+  <!-- bootstrap eklendi-->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+  integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+  crossorigin="anonymous">
+  </script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+  integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+
+  <!-- CSS kısmı-->
+  <style>
+
+    #Table{
+      width:50%;
+      margin-top:20px;
+      background-color: white;
+    }
+
+    #Title{
+      display:none;
+    }
+
+    body{
+      background-color: ghostwhite;
+    }
+
+    button{
+      margin-top: 20px;
+    }
+
+  </style>
+
+
+  <!-- Javascript Bölümleri-->
+
+  <script>
+
+    var timer;
+    var clock = 60000; // 60 saniye için
+
+    GetCurrency();
+    // Açılışta başlayacak fonkisyonlar
+    $(document).ready(function(){
+      timer=setInterval(GetCurrency, clock); // clock değişkeni kadar aralıklarla tablo güncelleme
+    });
+
+
+    /**
+
+      Gelen tarih bilgisi ParseDate fonksiyonuyla okunabilir hale getirlir.
+      Ay bilgisi için 10. aydan küçük ayların başına 0 konuldu.
+
+    **/
+
+    function ParseDate(_date){
+      let currentTime = new Date(_date);
+      var month = (currentTime.getMonth() + 1) < 10 ? "0" + (currentTime.getMonth() + 1) : (currentTime.getMonth() + 1);
+      var day = currentTime.getDate();
+      var year = currentTime.getFullYear();
+      var hour = currentTime.getHours();
+      var minute = currentTime.getMinutes();
+      return  day + "-" + month + "-" + year + " " + hour + ":" + minute;
+    }
+
+
+    /**
+
+      GetCurrency fonksiyonuyla alınan veriler tabloya yazıldı
+
+    **/
+
+    function GetCurrency(){
+
+      $.ajax({
+
+        url: "https://cors.io/?https://www.bloomberght.com/piyasa/intradaydata/dolar",
+        type:'GET',
+
+        success: function( result ) {
+
+          // gelen veriler array dizisine atıldı
+          let object=JSON.parse(result);
+          let array=object.SeriesData;
+
+          // verilerin yüklenmesi sırasında LOADING yazısı aktif edildi
+          $("#title").css("display","block");
+
+          // tablo temizlendi
+          $("#_tbody").html("");
+
+          // son 10 veri için döngü
+          for (var i = (array.length-1); i > array.length-10; i--)
+          {
+            // gelen satırlar tabloya eklendi
+            $("#_tbody").append("<tr><td>"+ParseDate(array[i][0])+"</td><td>"+array[i][1]+"</td></tr>");
+          }
+
+          // LOADING yazısı kaldırıldı
+          $("#title").css("display","none");
+        }
+      });
+      //console.log("Güncelledi!");
+    }
+
+  </script>
+</head>
+
+<body>
+
+  <!-- LOADING yazısı -->
+  <div><h1 id="Title" align="center">LOADING...</h1></div>
+
+  <!-- Güncelleme butonu  -->
+  <center><button type="button" onclick="GetCurrency()">Update</button></center>
+
+  <!-- Tablo  -->
+  <table id="Table" class="table table-hover" align="center">
+    <!-- Başlıklar -->
+    <thead class="thead-dark" align="center">
+    <tr>
+      <th>Date</th>
+      <th>Currency</th>
+    </tr>
+    </thead>
+    <!-- Satır ve Sütunlar  -->
+    <tbody id="_tbody" align="center">
+      <!-- Gelen veriler bu alana yazılır  -->
+    </tbody>
+  </table>
+
+</body>
+</html>
